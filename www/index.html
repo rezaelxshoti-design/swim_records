@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ثبت رکورد شنا</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#06283d">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --deep:#06283d; --pool:#0b6e99; --lane:#22b8cf; --foam:#e8f7fa; --ink:#0d2230;
+  --rope:#ff6b3d; --good:#0a8a4a; --bad:#c62f2f; --line:#c9dde5; --bg:#f3f9fb; --card:#ffffff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:Tahoma,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);
+  padding-top:env(safe-area-inset-top);padding-bottom:calc(46px + env(safe-area-inset-bottom))}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--rope);outline-offset:2px}
+
+/* Splash / poster */
+#splash{position:fixed;inset:0;z-index:50;background:var(--deep);display:flex;flex-direction:column;overflow:auto}
+#splash.hide{display:none}
+#splash svg{width:100%;height:auto;display:block;max-height:78vh}
+#splash .go{margin:12px 20px 20px;padding:14px;border:0;border-radius:10px;background:var(--rope);color:#fff;font-size:18px;font-weight:700}
+
+/* Header + tabs */
+header{background:var(--deep);color:#fff;padding:12px 14px 0}
+header h1{margin:0 0 8px;font-size:18px}
+nav{display:flex;gap:2px;overflow-x:auto}
+nav button{flex:1;min-width:84px;padding:10px 8px;border:0;background:transparent;color:#a9d4e2;font-size:14px;border-bottom:3px solid transparent}
+nav button.on{color:#fff;border-bottom-color:var(--rope);font-weight:700}
+
+main{padding:12px}
+section{display:none}
+section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.sp{justify-content:space-between}
+.btn{padding:9px 14px;border-radius:8px;border:1px solid var(--pool);background:var(--pool);color:#fff;font-size:14px}
+.btn.alt{background:#fff;color:var(--pool)}
+.btn.warn{background:#fff;color:var(--bad);border-color:var(--bad)}
+.btn.ok{background:var(--good);border-color:var(--good)}
+.field{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fff;min-width:0}
+h2{margin:0 0 8px;font-size:16px}
+.muted{color:#52707f;font-size:13px}
+
+/* Entry table */
+.wrap{overflow:auto;max-height:62vh;border:1px solid var(--line);border-radius:8px;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:680px}
+th,td{border:1px solid var(--line);padding:0}
+th{position:sticky;top:0;background:var(--foam);padding:8px 6px;font-size:13px;z-index:1}
+td input{width:100%;border:0;padding:9px 6px;background:transparent;text-align:center;min-width:70px}
+td input.nm{text-align:right;min-width:130px}
+td.i{width:36px;text-align:center;font-size:12px;color:#52707f;background:var(--foam)}
+td.d{width:40px;text-align:center}
+td.d button{border:0;background:transparent;color:var(--bad);font-size:18px;padding:6px}
+tr:focus-within td{background:#fffbe6}
+textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:8px;padding:8px;direction:ltr;text-align:left}
+
+/* Lists */
+.li{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff}
+.li.cur{border-color:var(--rope);background:#fff7f3}
+.li b{display:block}
+
+/* Compare */
+.up{color:var(--good);font-weight:700}
+.dn{color:var(--bad);font-weight:700}
+.cmp td,.cmp th{padding:6px 8px;text-align:center;font-size:13px}
+.cmp td:first-child{text-align:right}
+.best{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.best div{background:var(--foam);border-radius:8px;padding:8px;font-size:13px}
+.best b{display:block;font-size:12px;color:#52707f}
+
+/* Footer */
+footer{position:fixed;bottom:0;left:0;right:0;background:var(--deep);color:#cfe9f1;font-size:12px;text-align:center;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));z-index:20}
+footer a{color:#ffd0bf}
+</style>
+</head>
+<body>
+
+<!-- POSTER -->
+<div id="splash">
+  <svg viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="پوستر ثبت رکورد شنا">
+    <defs>
+      <linearGradient id="w" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0b6e99"/><stop offset="1" stop-color="#06283d"/>
+      </linearGradient>
+    </defs>
+    <rect width="400" height="520" fill="url(#w)"/>
+    <!-- lane ropes -->
+    <g stroke-width="7" stroke-dasharray="10 10">
+      <line x1="60"  y1="0" x2="60"  y2="520" stroke="#ff6b3d"/>
+      <line x1="140" y1="0" x2="140" y2="520" stroke="#22b8cf"/>
+      <line x1="220" y1="0" x2="220" y2="520" stroke="#ff6b3d"/>
+      <line x1="300" y1="0" x2="300" y2="520" stroke="#22b8cf"/>
+      <line x1="380" y1="0" x2="380" y2="520" stroke="#ff6b3d"/>
+    </g>
+    <rect x="30" y="60" width="340" height="250" rx="14" fill="#06283d" opacity=".88"/>
+    <text x="200" y="130" fill="#fff" font-size="40" font-weight="700" text-anchor="middle" font-family="Tahoma,Arial">ثبت رکورد شنا</text>
+    <text x="200" y="172" fill="#9fd8e6" font-size="17" text-anchor="middle" font-family="Tahoma,Arial">ورود لیست، ذخیره، مقایسه، خروجی اکسل</text>
+    <g font-family="Tahoma,Arial" font-size="15" fill="#fff" text-anchor="middle">
+      <rect x="48"  y="205" width="74" height="36" rx="18" fill="#ff6b3d"/><text x="85"  y="229">کرال سینه</text>
+      <rect x="130" y="205" width="74" height="36" rx="18" fill="#22b8cf"/><text x="167" y="229">کرال پشت</text>
+      <rect x="212" y="205" width="74" height="36" rx="18" fill="#ff6b3d"/><text x="249" y="229">قورباغه</text>
+      <rect x="294" y="205" width="62" height="36" rx="18" fill="#22b8cf"/><text x="325" y="229">پروانه</text>
+    </g>
+    <text x="200" y="280" fill="#cfe9f1" font-size="14" text-anchor="middle" font-family="Tahoma,Arial">چهار سبک، یک جدول، همهٔ رکوردها</text>
+    <path d="M0 360 Q50 335 100 360 T200 360 T300 360 T400 360 V520 H0Z" fill="#22b8cf" opacity=".55"/>
+    <path d="M0 400 Q50 375 100 400 T200 400 T300 400 T400 400 V520 H0Z" fill="#0b6e99" opacity=".8"/>
+    <text id="posterCreator" x="200" y="470" fill="#fff" font-size="15" text-anchor="middle" font-family="Tahoma,Arial"></text>
+    <text id="posterEmail" x="200" y="494" fill="#ffd0bf" font-size="13" text-anchor="middle" font-family="Tahoma,Arial"></text>
+  </svg>
+  <button class="go" id="enter">ورود به برنامه</button>
+</div>
+
+<header>
+  <h1>ثبت رکورد شنا</h1>
+  <nav id="tabs">
+    <button data-t="entry" class="on">ورود اطلاعات</button>
+    <button data-t="lists">لیست‌ها</button>
+    <button data-t="compare">مقایسه</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ENTRY -->
+  <section id="entry" class="on">
+    <div class="card">
+      <div class="row sp">
+        <div><h2 id="curName">لیست</h2><div class="muted" id="count"></div></div>
+        <div class="row">
+          <button class="btn alt" id="rename">تغییر نام</button>
+          <button class="btn ok" id="exportCur">خروجی اکسل</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="wrap">
+        <table id="tbl">
+          <thead><tr>
+            <th>#</th><th>نام</th><th>تاریخ تولد</th>
+            <th>کرال سینه</th><th>کرال پشت</th><th>قورباغه</th><th>پروانه</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="add1">+ یک ردیف</button>
+        <button class="btn alt" id="add10">+ ۱۰ ردیف</button>
+        <button class="btn alt" id="add50">+ ۵۰ ردیف</button>
+      </div>
+      <p class="muted">رکورد را به‌صورت ۶۲.۴۵ یا ۱:۰۲.۴۵ بنویس. ارقام فارسی هم پذیرفته می‌شود.</p>
+    </div>
+
+    <div class="card">
+      <h2>چسباندن از اکسل</h2>
+      <p class="muted">ردیف‌ها را در اکسل کپی کن و اینجا بچسبان. ستون‌ها به ترتیب: نام، تاریخ تولد، سینه، پشت، قورباغه، پروانه.</p>
+      <textarea id="paste" placeholder="Ali&#9;1385/04/12&#9;28.40&#9;31.20&#9;35.10&#9;29.80"></textarea>
+      <div class="row" style="margin-top:8px"><button class="btn" id="doPaste">افزودن به لیست</button></div>
+    </div>
+
+    <div class="card">
+      <h2>بهترین رکوردهای این لیست</h2>
+      <div class="best" id="best"></div>
+    </div>
+  </section>
+
+  <!-- LISTS -->
+  <section id="lists">
+    <div class="card">
+      <div class="row sp"><h2>لیست‌های ذخیره‌شده</h2><button class="btn" id="newList">+ لیست جدید</button></div>
+      <div id="listBox"></div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section id="compare">
+    <div class="card">
+      <h2>مقایسهٔ دو لیست</h2>
+      <p class="muted">شناگرها با نامشان تطبیق داده می‌شوند. تفاوت منفی یعنی رکورد بهتر شده است.</p>
+      <div class="row">
+        <select id="selA" class="field"></select>
+        <span>با</span>
+        <select id="selB" class="field"></select>
+        <button class="btn" id="doCmp">مقایسه</button>
+        <button class="btn ok" id="exportCmp">خروجی اکسل</button>
+      </div>
+    </div>
+    <div class="card" id="cmpOut" style="display:none">
+      <div class="muted" id="cmpInfo"></div>
+      <div class="wrap" style="margin-top:8px">
+        <table class="cmp" id="cmpTbl"></table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  ساخته‌شده توسط <span id="fCreator"></span> ·
+  <a id="fEmail"></a>
+</footer>
+
+<script>
+/* ====== تنظیمات سازنده: اینجا را ویرایش کن ====== */
+const CREATOR_NAME  = "Reza Ghorishi";
+const CREATOR_EMAIL = "rezamonster.teriver@gmail.com";
+/* ================================================== */
+
+const KEY = "swimrec_v1";
+const STROKES = [["free","کرال سینه"],["back","کرال پشت"],["breast","قورباغه"],["fly","پروانه"]];
+const FIELDS = ["name","birth","free","back","breast","fly"];
+const $ = s => document.querySelector(s);
+const blank = () => ({name:"",birth:"",free:"",back:"",breast:"",fly:""});
+
+/* ---------- ذخیره‌سازی ---------- */
+let db = {lists:[],cur:null};
+try { db = JSON.parse(localStorage.getItem(KEY)) || db; } catch(e){}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(db)); }catch(e){} }
+function newList(name){
+  const l = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),
+             name:name||"لیست جدید", created:new Date().toISOString(), rows:[blank()]};
+  db.lists.push(l); db.cur = l.id; save(); return l;
+}
+const cur = () => db.lists.find(l => l.id === db.cur);
+if(!db.lists.length) newList("لیست اول");
+if(!cur()) db.cur = db.lists[0].id;
+
+/* ---------- ابزارهای زمان ---------- */
+function norm(s){
+  return String(s||"")
+    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+    .replace(/[٫,،]/g,".").replace(/[:٬]/g,":").trim();
+}
+function toSec(s){
+  s = norm(s); if(!s) return null;
+  let v;
+  if(s.includes(":")){ const p = s.split(":"); v = (parseFloat(p[0])||0)*60 + parseFloat(p[1]); }
+  else v = parseFloat(s);
+  return isNaN(v) ? null : v;
+}
+function fmt(sec){
+  if(sec==null) return "";
+  const m = Math.floor(sec/60), r = sec - m*60;
+  return m>0 ? m+":"+(r<10?"0":"")+r.toFixed(2) : r.toFixed(2);
+}
+
+/* ---------- تب‌ها ---------- */
+function showTab(t){
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===t));
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t===t));
+  if(t==="lists") renderLists();
+  if(t==="compare") fillSelects();
+  if(t==="entry") renderEntry();
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showTab(b.dataset.t));
+
+/* ---------- صفحهٔ ورود اطلاعات ---------- */
+function renderEntry(){
+  const l = cur();
+  $("#curName").textContent = l.name;
+  const tb = $("#tbl tbody"); tb.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  l.rows.forEach((r,i) => {
+    const tr = document.createElement("tr");
+    const n = document.createElement("td"); n.className="i"; n.textContent = i+1; tr.appendChild(n);
+    FIELDS.forEach(f => {
+      const td = document.createElement("td");
+      const inp = document.createElement("input");
+      inp.value = r[f] || "";
+      if(f==="name") inp.className = "nm";
+      if(f==="birth"){ inp.placeholder="1385/04/12"; inp.inputMode="numeric"; }
+      if(["free","back","breast","fly"].includes(f)){ inp.placeholder="0.00"; inp.inputMode="decimal"; }
+      inp.oninput = () => { r[f] = inp.value; save(); updateMeta(); };
+      td.appendChild(inp); tr.appendChild(td);
+    });
+    const d = document.createElement("td"); d.className="d";
+    const x = document.createElement("button"); x.textContent="×"; x.setAttribute("aria-label","حذف ردیف");
+    x.onclick = () => { l.rows.splice(i,1); if(!l.rows.length) l.rows.push(blank()); save(); renderEntry(); };
+    d.appendChild(x); tr.appendChild(d);
+    frag.appendChild(tr);
+  });
+  tb.appendChild(frag);
+  updateMeta();
+}
+function updateMeta(){
+  const l = cur();
+  const filled = l.rows.filter(r => r.name.trim()).length;
+  $("#count").textContent = filled + " شناگر ثبت‌شده، " + l.rows.length + " ردیف";
+  const best = $("#best"); best.innerHTML = "";
+  STROKES.forEach(([k,label]) => {
+    let b = null;
+    l.rows.forEach(r => { const s = toSec(r[k]); if(s!=null && (b===null || s<b.s)) b = {s, n:r.name}; });
+    const d = document.createElement("div");
+    const t = document.createElement("b"); t.textContent = label;
+    d.appendChild(t);
+    d.appendChild(document.createTextNode(b ? fmt(b.s)+" ("+(b.n||"بدون نام")+")" : "ثبت نشده"));
+    best.appendChild(d);
+  });
+}
+function addRows(n){ const l = cur(); for(let i=0;i<n;i++) l.rows.push(blank()); save(); renderEntry();
+  const w = document.querySelector(".wrap"); w.scrollTop = w.scrollHeight; }
+$("#add1").onclick = () => addRows(1);
+$("#add10").onclick = () => addRows(10);
+$("#add50").onclick = () => addRows(50);
+$("#rename").onclick = () => {
+  const n = prompt("نام لیست:", cur().name);
+  if(n && n.trim()){ cur().name = n.trim(); save(); renderEntry(); }
+};
+
+/* چسباندن از اکسل */
+$("#doPaste").onclick = () => {
+  const txt = $("#paste").value.replace(/\r/g,"").trim();
+  if(!txt){ alert("اول متن را بچسبان."); return; }
+  let lines = txt.split("\n").filter(x => x.trim());
+  const sep = lines[0].includes("\t") ? "\t" : (lines[0].includes(";") ? ";" : ",");
+  let rows = lines.map(x => x.split(sep).map(c => c.trim()));
+  // اگر سطر اول عنوان بود (ستون سوم عدد نیست) رد شود
+  if(rows[0][2] && toSec(rows[0][2])==null) rows.shift();
+  const l = cur();
+  if(l.rows.every(r => FIELDS.every(f => !r[f]))) l.rows = [];
+  rows.forEach(c => {
+    const r = blank();
+    FIELDS.forEach((f,i) => r[f] = c[i] || "");
+    l.rows.push(r);
+  });
+  save(); $("#paste").value = ""; renderEntry();
+  alert(rows.length + " ردیف اضافه شد.");
+};
+
+/* ---------- لیست‌ها ---------- */
+function renderLists(){
+  const box = $("#listBox"); box.innerHTML = "";
+  db.lists.forEach(l => {
+    const d = document.createElement("div"); d.className = "li" + (l.id===db.cur ? " cur":"");
+    const info = document.createElement("div");
+    const b = document.createElement("b"); b.textContent = l.name;
+    const m = document.createElement("span"); m.className="muted";
+    m.textContent = l.rows.filter(r => r.name.trim()).length + " شناگر";
+    info.appendChild(b); info.appendChild(m);
+    const acts = document.createElement("div"); acts.className = "row";
+    const o = document.createElement("button"); o.className="btn"; o.textContent="باز کردن";
+    o.onclick = () => { db.cur = l.id; save(); showTab("entry"); };
+    const e = document.createElement("button"); e.className="btn alt"; e.textContent="اکسل";
+    e.onclick = () => exportList(l);
+    const x = document.createElement("button"); x.className="btn warn"; x.textContent="حذف";
+    x.onclick = () => {
+      if(!confirm("لیست «"+l.name+"» حذف شود؟")) return;
+      db.lists = db.lists.filter(z => z.id !== l.id);
+      if(!db.lists.length) newList("لیست اول");
+      if(!cur()) db.cur = db.lists[0].id;
+      save(); renderLists();
+    };
+    acts.appendChild(o); acts.appendChild(e); acts.appendChild(x);
+    d.appendChild(info); d.appendChild(acts); box.appendChild(d);
+  });
+}
+$("#newList").onclick = () => {
+  const n = prompt("نام لیست جدید:", "لیست " + (db.lists.length+1));
+  if(n===null) return;
+  newList(n.trim() || undefined); showTab("entry");
+};
+
+/* ---------- مقایسه ---------- */
+let lastCmp = null;
+function fillSelects(){
+  ["#selA","#selB"].forEach((s,idx) => {
+    const el = $(s), keep = el.value; el.innerHTML = "";
+    db.lists.forEach(l => { const o = document.createElement("option"); o.value = l.id; o.textContent = l.name; el.appendChild(o); });
+    if(keep && db.lists.some(l => l.id===keep)) el.value = keep;
+    else if(db.lists[idx]) el.value = db.lists[idx].id;
+  });
+}
+const key = s => norm(s).toLowerCase().replace(/\s+/g," ");
+$("#doCmp").onclick = () => {
+  const A = db.lists.find(l => l.id===$("#selA").value);
+  const B = db.lists.find(l => l.id===$("#selB").value);
+  if(!A || !B){ alert("دو لیست را انتخاب کن."); return; }
+  if(A.id===B.id){ alert("دو لیست متفاوت انتخاب کن."); return; }
+  const mapA = new Map(); A.rows.forEach(r => { if(r.name.trim()) mapA.set(key(r.name), r); });
+  const out = []; let only = 0; const seen = new Set();
+  B.rows.forEach(rb => {
+    if(!rb.name.trim()) return;
+    const k = key(rb.name), ra = mapA.get(k);
+    if(!ra){ only++; return; }
+    seen.add(k);
+    out.push({name:rb.name, cells: STROKES.map(([f]) => {
+      const a = toSec(ra[f]), b = toSec(rb[f]);
+      return {a, b, d:(a!=null && b!=null) ? b-a : null};
+    })});
+  });
+  const onlyA = [...mapA.keys()].filter(k => !seen.has(k)).length;
+  lastCmp = {A, B, out};
+
+  const tbl = $("#cmpTbl"); tbl.innerHTML = "";
+  const head = document.createElement("tr");
+  head.innerHTML = "<th rowspan='2'>نام</th>" + STROKES.map(s => "<th colspan='3'>"+s[1]+"</th>").join("");
+  tbl.appendChild(head);
+  const sub = document.createElement("tr");
+  sub.innerHTML = STROKES.map(() => "<th>"+esc(A.name)+"</th><th>"+esc(B.name)+"</th><th>تفاوت</th>").join("");
+  tbl.appendChild(sub);
+  out.forEach(r => {
+    const tr = document.createElement("tr");
+    const n = document.createElement("td"); n.textContent = r.name; tr.appendChild(n);
+    r.cells.forEach(c => {
+      tr.insertAdjacentHTML("beforeend",
+        "<td>"+fmt(c.a)+"</td><td>"+fmt(c.b)+"</td><td class='"+(c.d==null?"":(c.d<0?"up":(c.d>0?"dn":"")))+"'>"+
+        (c.d==null?"":(c.d>0?"+":"")+c.d.toFixed(2))+"</td>");
+    });
+    tbl.appendChild(tr);
+  });
+  $("#cmpInfo").textContent = out.length + " شناگر مشترک. فقط در «"+A.name+"»: "+onlyA+". فقط در «"+B.name+"»: "+only+".";
+  $("#cmpOut").style.display = "block";
+};
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- خروجی اکسل ---------- */
+function csv(rows){
+  return "\ufeff" + rows.map(r => r.map(c => {
+    c = c==null ? "" : String(c);
+    return /[",\n;]/.test(c) ? '"'+c.replace(/"/g,'""')+'"' : c;
+  }).join(",")).join("\r\n");
+}
+async function saveFile(name, rows){
+  // اگر کتابخانهٔ SheetJS اضافه شده باشد، فایل xlsx واقعی ساخته می‌شود
+  const C = window.Capacitor, native = C && C.isNativePlatform && C.isNativePlatform();
+  let data, mime, fname, enc = "utf8";
+  if(window.XLSX){
+    const ws = XLSX.utils.aoa_to_sheet(rows), wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    data = XLSX.write(wb, {bookType:"xlsx", type: native ? "base64" : "array"});
+    mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; fname = name + ".xlsx"; enc = undefined;
+  } else { data = csv(rows); mime = "text/csv;charset=utf-8"; fname = name + ".csv"; }
+
+  if(native && C.Plugins && C.Plugins.Filesystem && C.Plugins.Share){
+    try{
+      const w = await C.Plugins.Filesystem.writeFile({path:fname, data, directory:"CACHE", ...(enc?{encoding:enc}:{})});
+      await C.Plugins.Share.share({title:fname, url:w.uri});
+      return;
+    }catch(e){ alert("خطا در ذخیره: " + (e.message||e)); return; }
+  }
+  const blob = new Blob([data], {type:mime});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = fname;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function exportList(l){
+  const rows = [["نام","تاریخ تولد", ...STROKES.map(s => s[1]+" (ثانیه)")]];
+  l.rows.filter(r => r.name.trim()).forEach(r =>
+    rows.push([r.name, norm(r.birth), ...STROKES.map(([f]) => { const s = toSec(r[f]); return s==null ? "" : s; })]));
+  saveFile(l.name.replace(/[\\/:*?"<>|]/g,"_"), rows);
+}
+$("#exportCur").onclick = () => exportList(cur());
+$("#exportCmp").onclick = () => {
+  if(!lastCmp){ alert("اول مقایسه را اجرا کن."); return; }
+  const {A,B,out} = lastCmp;
+  const head = ["نام"];
+  STROKES.forEach(s => head.push(s[1]+" - "+A.name, s[1]+" - "+B.name, s[1]+" - تفاوت"));
+  const rows = [head];
+  out.forEach(r => {
+    const line = [r.name];
+    r.cells.forEach(c => line.push(c.a==null?"":c.a, c.b==null?"":c.b, c.d==null?"":+c.d.toFixed(2)));
+    rows.push(line);
+  });
+  saveFile("مقایسه_"+A.name+"_"+B.name, rows);
+};
+
+/* ---------- پوستر و فوتر ---------- */
+$("#posterCreator").textContent = "سازنده: " + CREATOR_NAME;
+$("#posterEmail").textContent = CREATOR_EMAIL;
+$("#fCreator").textContent = CREATOR_NAME;
+$("#fEmail").textContent = CREATOR_EMAIL;
+$("#fEmail").href = "mailto:" + CREATOR_EMAIL;
+$("#enter").onclick = () => $("#splash").classList.add("hide");
+
+renderEntry();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
